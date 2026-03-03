@@ -1,0 +1,3 @@
+[devshell]
+name = "my-bun-project"
+packages = ["bun", "typescript-language-server", "biome"]

@@ -1,0 +1,30 @@
+{
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts SessionStart"
+    },
+    {
+      "event": "SessionEnd",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts SessionEnd"
+    },
+    {
+      "event": "UserPromptSubmit",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts UserPromptSubmit"
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "AskUserQuestion",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts PreToolUse AskUserQuestion"
+    },
+    {
+      "event": "PreToolUse",
+      "matcher": "ExitPlanMode",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts PreToolUse ExitPlanMode"
+    },
+    {
+      "event": "Stop",
+      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts Stop"
+    }
+  ]
+}

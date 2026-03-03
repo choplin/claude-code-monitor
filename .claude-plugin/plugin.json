@@ -1,0 +1,5 @@
+{
+  "name": "claude-code-monitor",
+  "version": "0.1.0",
+  "description": "Monitor multiple Claude Code session states"
+}

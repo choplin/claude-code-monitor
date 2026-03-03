@@ -1,0 +1,16 @@
+{
+  "name": "claude-code-monitor",
+  "version": "0.1.0",
+  "description": "Monitor multiple Claude Code session states",
+  "type": "module",
+  "bin": {
+    "claude-code-monitor": "./src/cli.ts"
+  },
+  "scripts": {
+    "typecheck": "bun run --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "bun-types": "^1.3.6",
+    "typescript": "^5.9.3"
+  }
+}
