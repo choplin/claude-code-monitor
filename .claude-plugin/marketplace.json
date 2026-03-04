@@ -1,0 +1,20 @@
+{
+  "name": "claude-code-monitor",
+  "owner": {
+    "name": "aki"
+  },
+  "metadata": {
+    "description": "Monitor multiple Claude Code session states"
+  },
+  "plugins": [
+    {
+      "name": "claude-code-monitor",
+      "source": "./",
+      "description": "Monitor multiple Claude Code session states via hooks and SQLite",
+      "version": "0.1.0",
+      "category": "development",
+      "tags": ["monitoring", "session", "tmux"],
+      "keywords": ["monitor", "session", "status"]
+    }
+  ]
+}
