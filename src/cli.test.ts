@@ -266,6 +266,72 @@ describe("CLI: summary", () => {
   });
 });
 
+describe("CLI: hook", () => {
+  function runHook(event: string, payload: object, toolName?: string) {
+    const args = ["run", cliPath, "hook", event];
+    if (toolName) args.push(toolName);
+    const result = spawnSync("bun", args, {
+      input: JSON.stringify(payload),
+      env: { ...process.env, CLAUDE_CODE_MONITOR_DB: testDb },
+    });
+    return {
+      stdout: result.stdout?.toString().trim() ?? "",
+      stderr: result.stderr?.toString().trim() ?? "",
+      exitCode: result.status ?? -1,
+    };
+  }
+
+  test("creates a session via hook", () => {
+    const result = runHook("SessionStart", {
+      session_id: "h1",
+      cwd: "/path/hook-project",
+    });
+    expect(result.exitCode).toBe(0);
+
+    const list = runCli("list");
+    expect(list.stdout).toContain("hook-project");
+    expect(list.stdout).toContain("waiting (input)");
+  });
+
+  test("updates session state via hook", () => {
+    runHook("SessionStart", { session_id: "h2", cwd: "/path/proj" });
+    runHook("UserPromptSubmit", { session_id: "h2", cwd: "/path/proj" });
+
+    const list = runCli("list");
+    expect(list.stdout).toContain("running");
+  });
+
+  test("handles PreToolUse with tool name", () => {
+    runHook("SessionStart", { session_id: "h3", cwd: "/path/proj" });
+    runHook(
+      "PreToolUse",
+      { session_id: "h3", cwd: "/path/proj" },
+      "AskUserQuestion"
+    );
+
+    const list = runCli("list");
+    expect(list.stdout).toContain("waiting (question)");
+  });
+
+  test("deletes session on SessionEnd", () => {
+    runHook("SessionStart", { session_id: "h4", cwd: "/path/proj" });
+    runHook("SessionEnd", { session_id: "h4", cwd: "/path/proj" });
+
+    const list = runCli("list");
+    expect(list.stdout).toBe("No active sessions");
+  });
+
+  test("exits silently with missing session_id", () => {
+    const result = runHook("SessionStart", { cwd: "/path/proj" });
+    expect(result.exitCode).toBe(0);
+  });
+
+  test("exits silently with missing cwd", () => {
+    const result = runHook("SessionStart", { session_id: "h5" });
+    expect(result.exitCode).toBe(0);
+  });
+});
+
 describe("CLI: general", () => {
   test("shows help with --help", () => {
     const result = runCli("--help");

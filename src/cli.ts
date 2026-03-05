@@ -5,6 +5,7 @@ import { runUpdate } from "./commands/update";
 import { runList } from "./commands/list";
 import { runDelete } from "./commands/delete";
 import { runSummary } from "./commands/summary";
+import { runHook } from "./commands/hook";
 
 const HELP = `claude-code-monitor - Monitor multiple Claude Code session states
 
@@ -16,6 +17,7 @@ Commands:
   list      List all sessions
   delete    Delete a session
   summary   Get session summary
+  hook      Handle hook events (internal, reads stdin)
 
 Options:
   --help    Show this help message
@@ -32,9 +34,7 @@ function printHelp(): void {
   console.log(HELP);
 }
 
-function main(): void {
-  initDb();
-
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
 
@@ -42,6 +42,14 @@ function main(): void {
     printHelp();
     process.exit(0);
   }
+
+  // hook subcommand handles its own initDb() call
+  if (command === "hook") {
+    await runHook(args.slice(1));
+    return;
+  }
+
+  initDb();
 
   switch (command) {
     case "update":

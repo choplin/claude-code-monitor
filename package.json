@@ -4,9 +4,10 @@
   "description": "Monitor multiple Claude Code session states",
   "type": "module",
   "bin": {
-    "claude-code-monitor": "./src/cli.ts"
+    "claude-code-monitor": "./bin/claude-code-monitor"
   },
   "scripts": {
+    "build": "bun build --compile --minify src/cli.ts --outfile bin/.compiled",
     "typecheck": "bun run --bun tsc --noEmit",
     "test": "bun test"
   },

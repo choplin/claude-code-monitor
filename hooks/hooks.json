@@ -2,29 +2,29 @@
   "hooks": [
     {
       "event": "SessionStart",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts SessionStart"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook SessionStart"
     },
     {
       "event": "SessionEnd",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts SessionEnd"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook SessionEnd"
     },
     {
       "event": "UserPromptSubmit",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts UserPromptSubmit"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook UserPromptSubmit"
     },
     {
       "event": "PreToolUse",
       "matcher": "AskUserQuestion",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts PreToolUse AskUserQuestion"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook PreToolUse AskUserQuestion"
     },
     {
       "event": "PreToolUse",
       "matcher": "ExitPlanMode",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts PreToolUse ExitPlanMode"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook PreToolUse ExitPlanMode"
     },
     {
       "event": "Stop",
-      "command": "bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/handler.ts Stop"
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor hook Stop"
     }
   ]
 }

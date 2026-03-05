@@ -16,27 +16,40 @@ The system has three layers:
 2. **Database** — Store raw event records per session
 3. **CLI** — Read sessions, interpret states, and display results
 
+## Entry Point & Auto-Build
+
+All invocations (hooks and CLI) go through `bin/claude-code-monitor`, a shell script that:
+
+1. Uses the compiled binary (`bin/.compiled`) if available
+2. Falls back to `bun run src/cli.ts`
+3. Triggers a background `bun build --compile` on first use (mkdir-based lock prevents concurrent builds)
+
+```
+First run:  bin/claude-code-monitor → bun run src/cli.ts → background build
+Next runs:  bin/claude-code-monitor → exec bin/.compiled (fast, no bun needed)
+```
+
 ## Data Flow
 
 ```
 Claude Code emits event
-  → hooks/hooks.json routes event to handler
-    → hooks/scripts/handler.ts parses stdin JSON, extracts session_id/cwd
-      → spawns `claude-code-monitor update` (or `delete` for SessionEnd)
-        → src/db.ts upserts raw event into SQLite
+  → hooks/hooks.json routes to bin/claude-code-monitor hook <event>
+    → cli.ts `hook` subcommand reads stdin, calls db directly
+      → src/db.ts upserts raw event into SQLite
 
-User runs CLI
-  → src/cli.ts dispatches to command handler
-    → src/db.ts reads sessions from SQLite
-      → src/interpret.ts maps raw event to display state
-        → output to stdout
+User runs CLI (or slash command)
+  → bin/claude-code-monitor <command>
+    → cli.ts dispatches to command handler
+      → src/db.ts reads sessions from SQLite
+        → src/interpret.ts maps raw event to display state
+          → output to stdout
 ```
 
 ### Event-to-CLI mapping
 
 | Step | Component | File |
 |------|-----------|------|
-| Event received | Hook handler | `hooks/scripts/handler.ts` |
+| Event received | Hook subcommand | `src/commands/hook.ts` |
 | Data persisted | Database layer | `src/db.ts` |
 | State interpreted | Interpretation | `src/interpret.ts` |
 | Output displayed | CLI commands | `src/commands/*.ts` |
@@ -91,9 +104,9 @@ Configured in `hooks/hooks.json`:
 | `PreToolUse` | `ExitPlanMode` | Upsert session with tool_name |
 | `Stop` | — | Upsert session |
 
-The handler (`hooks/scripts/handler.ts`) receives event data via stdin as JSON,
-extracts `session_id` and `cwd`, and delegates to the CLI's `update` or `delete`
-command via `spawnSync`.
+All hooks go through `bin/claude-code-monitor hook <event>`. The `hook` subcommand
+reads stdin JSON, extracts `session_id` and `cwd`, and calls `upsertSession`/
+`deleteSession` directly (no subprocess spawning).
 
 Errors are silently caught to never block Claude Code.
 
@@ -120,10 +133,14 @@ Summary output groups states into two categories:
 claude-code-monitor/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
+├── bin/
+│   ├── claude-code-monitor  # Shell script entry point (auto-builds on first use)
+│   └── .compiled            # Compiled binary (gitignored, built locally)
+├── commands/
+│   ├── monitor-list.md      # /monitor-list slash command
+│   └── monitor-summary.md   # /monitor-summary slash command
 ├── hooks/
-│   ├── hooks.json           # Hook event configuration
-│   └── scripts/
-│       └── handler.ts       # Hook event handler
+│   └── hooks.json           # Hook event configuration
 ├── src/
 │   ├── cli.ts               # CLI entry point
 │   ├── db.ts                # Database operations
@@ -131,6 +148,7 @@ claude-code-monitor/
 │   ├── types.ts             # Type definitions
 │   └── commands/
 │       ├── delete.ts        # `delete` command
+│       ├── hook.ts          # `hook` command (stdin-based, used by hooks)
 │       ├── list.ts          # `list` command
 │       ├── summary.ts       # `summary` command
 │       └── update.ts        # `update` command

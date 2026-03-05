@@ -32,6 +32,10 @@ Add the marketplace and install the plugin:
 /plugin install claude-code-monitor@claude-code-monitor
 ```
 
+### Prerequisites
+
+[Bun](https://bun.sh/) is required. On first use, the plugin automatically compiles a standalone binary in the background for faster subsequent runs.
+
 ## 🔍 How It Works
 
 ### Event Collection
@@ -58,9 +62,18 @@ Raw events are stored in the database and interpreted into 4 states at display t
 | `waiting (approval)` | Waiting for plan approval | `PreToolUse(ExitPlanMode)` |
 | `running` | Processing | `UserPromptSubmit` |
 
-## 🚀 CLI Usage
+## 🚀 Usage
 
-### `list` — Show all sessions
+### Slash Commands (in Claude Code)
+
+| Command | Description |
+|---------|-------------|
+| `/monitor-list` | Show all active sessions and their states |
+| `/monitor-summary` | Show waiting/total summary |
+
+### CLI
+
+#### `list` — Show all sessions
 
 ```bash
 claude-code-monitor list
@@ -78,7 +91,7 @@ JSON format:
 claude-code-monitor list --format json
 ```
 
-### `summary` — One-line summary
+#### `summary` — One-line summary
 
 ```bash
 claude-code-monitor summary
@@ -90,7 +103,7 @@ claude-code-monitor summary
 
 Outputs `waiting/total` — useful for status lines (e.g. tmux).
 
-### `update` — Register/update a session (internal)
+#### `update` — Register/update a session (internal)
 
 Used internally by hooks. Not intended for direct use.
 
@@ -103,7 +116,7 @@ claude-code-monitor update \
   [--tmux-pane <pane>]
 ```
 
-### `delete` — Delete a session (internal)
+#### `delete` — Delete a session (internal)
 
 Used internally by hooks. Not intended for direct use.
 
