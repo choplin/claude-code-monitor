@@ -29,10 +29,3 @@ export type SessionState =
 
 // CLI output formats
 export type OutputFormat = "text" | "json";
-
-// Summary output
-export interface Summary {
-  total: number;
-  waiting: number; // waiting_input + waiting_question + waiting_approval
-  running: number;
-}

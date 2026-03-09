@@ -69,7 +69,6 @@ Raw events are stored in the database and interpreted into 4 states at display t
 | Command | Description |
 |---------|-------------|
 | `/monitor-list` | Show all active sessions and their states |
-| `/monitor-summary` | Show waiting/total summary |
 
 ### CLI
 
@@ -90,18 +89,6 @@ JSON format:
 ```bash
 claude-code-monitor list --format json
 ```
-
-#### `summary` — One-line summary
-
-```bash
-claude-code-monitor summary
-```
-
-```
-2/3
-```
-
-Outputs `waiting/total` — useful for status lines (e.g. tmux).
 
 #### `update` — Register/update a session (internal)
 

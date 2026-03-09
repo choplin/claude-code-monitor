@@ -125,10 +125,6 @@ PreToolUse
   └─ ExitPlanMode ─────▶ waiting (approval)
 ```
 
-Summary output groups states into two categories:
-- **waiting** = `waiting (input)` + `waiting (question)` + `waiting (approval)`
-- **running** = `running`
-
 ## Directory Structure
 
 ```
@@ -139,8 +135,7 @@ claude-code-monitor/
 │   ├── claude-code-monitor  # Shell script entry point (auto-builds on first use)
 │   └── .compiled            # Compiled binary (gitignored, built locally)
 ├── commands/
-│   ├── monitor-list.md      # /monitor-list slash command
-│   └── monitor-summary.md   # /monitor-summary slash command
+│   └── monitor-list.md      # /monitor-list slash command
 ├── hooks/
 │   └── hooks.json           # Hook event configuration
 ├── src/
@@ -152,7 +147,6 @@ claude-code-monitor/
 │       ├── delete.ts        # `delete` command
 │       ├── hook.ts          # `hook` command (stdin-based, used by hooks)
 │       ├── list.ts          # `list` command
-│       ├── summary.ts       # `summary` command
 │       └── update.ts        # `update` command
 ├── package.json
 └── tsconfig.json

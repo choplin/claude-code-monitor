@@ -1,10 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import {
-  interpretState,
-  formatState,
-  formatElapsed,
-  calculateSummary,
-} from "./interpret";
+import { interpretState, formatState, formatElapsed } from "./interpret";
 import type { Session } from "./types";
 
 function makeSession(overrides: Partial<Session> = {}): Session {
@@ -113,71 +108,5 @@ describe("formatElapsed", () => {
 
   test("zero seconds", () => {
     expect(formatElapsed(now)).toBe("0s");
-  });
-});
-
-describe("calculateSummary", () => {
-  test("empty sessions", () => {
-    expect(calculateSummary([])).toEqual({
-      total: 0,
-      waiting: 0,
-      running: 0,
-    });
-  });
-
-  test("all waiting sessions", () => {
-    const sessions = [
-      makeSession({ session_id: "1", event: "SessionStart" }),
-      makeSession({ session_id: "2", event: "Stop" }),
-      makeSession({
-        session_id: "3",
-        event: "PreToolUse",
-        tool_name: "AskUserQuestion",
-      }),
-    ];
-    expect(calculateSummary(sessions)).toEqual({
-      total: 3,
-      waiting: 3,
-      running: 0,
-    });
-  });
-
-  test("all running sessions", () => {
-    const sessions = [
-      makeSession({ session_id: "1", event: "UserPromptSubmit" }),
-      makeSession({
-        session_id: "2",
-        event: "PreToolUse",
-        tool_name: "Bash",
-      }),
-    ];
-    expect(calculateSummary(sessions)).toEqual({
-      total: 2,
-      waiting: 0,
-      running: 2,
-    });
-  });
-
-  test("mixed states", () => {
-    const sessions = [
-      makeSession({ session_id: "1", event: "SessionStart" }), // waiting
-      makeSession({ session_id: "2", event: "UserPromptSubmit" }), // running
-      makeSession({
-        session_id: "3",
-        event: "PreToolUse",
-        tool_name: "AskUserQuestion",
-      }), // waiting
-      makeSession({
-        session_id: "4",
-        event: "PreToolUse",
-        tool_name: "ExitPlanMode",
-      }), // waiting
-      makeSession({ session_id: "5", event: "Stop" }), // waiting
-    ];
-    expect(calculateSummary(sessions)).toEqual({
-      total: 5,
-      waiting: 4,
-      running: 1,
-    });
   });
 });

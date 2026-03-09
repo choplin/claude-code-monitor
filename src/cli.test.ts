@@ -289,48 +289,6 @@ describe("CLI: delete", () => {
   });
 });
 
-describe("CLI: summary", () => {
-  test("shows 0/0 when no sessions", () => {
-    const result = runCli("summary");
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe("0/0");
-  });
-
-  test("counts waiting and total correctly", () => {
-    runCli(
-      "update",
-      "--session-id",
-      "s1",
-      "--cwd",
-      "/path/a",
-      "--event",
-      "SessionStart"
-    );
-    runCli(
-      "update",
-      "--session-id",
-      "s2",
-      "--cwd",
-      "/path/b",
-      "--event",
-      "UserPromptSubmit"
-    );
-    runCli(
-      "update",
-      "--session-id",
-      "s3",
-      "--cwd",
-      "/path/c",
-      "--event",
-      "PreToolUse",
-      "--tool-name",
-      "AskUserQuestion"
-    );
-    const result = runCli("summary");
-    expect(result.stdout).toBe("2/3");
-  });
-});
-
 describe("CLI: hook", () => {
   function runHook(event: string, payload: object, toolName?: string) {
     const args = ["run", cliPath, "hook", event];

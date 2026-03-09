@@ -1,4 +1,4 @@
-import type { Session, SessionState, Summary } from "./types";
+import type { Session, SessionState } from "./types";
 
 // Interpret raw event data into session state (Late Interpretation)
 export function interpretState(session: Session): SessionState {
@@ -38,19 +38,4 @@ export function formatElapsed(updatedAt: number): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
   return `${Math.floor(seconds / 86400)}d`;
-}
-
-// Calculate summary from sessions
-export function calculateSummary(sessions: Session[]): Summary {
-  let running = 0;
-  for (const session of sessions) {
-    if (interpretState(session) === "running") {
-      running++;
-    }
-  }
-  return {
-    total: sessions.length,
-    waiting: sessions.length - running,
-    running,
-  };
 }

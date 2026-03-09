@@ -4,7 +4,6 @@ import { initDb } from "./db";
 import { runUpdate } from "./commands/update";
 import { runList } from "./commands/list";
 import { runDelete } from "./commands/delete";
-import { runSummary } from "./commands/summary";
 import { runHook } from "./commands/hook";
 
 const HELP = `claude-code-monitor - Monitor multiple Claude Code session states
@@ -16,7 +15,6 @@ Commands:
   update    Register or update a session
   list      List all sessions
   delete    Delete a session
-  summary   Get session summary
   hook      Handle hook events (internal, reads stdin)
 
 Options:
@@ -27,7 +25,6 @@ Examples:
   claude-code-monitor list
   claude-code-monitor list --format json
   claude-code-monitor delete --session-id abc123
-  claude-code-monitor summary
 `;
 
 function printHelp(): void {
@@ -60,9 +57,6 @@ async function main(): Promise<void> {
       break;
     case "delete":
       runDelete(args.slice(1));
-      break;
-    case "summary":
-      runSummary();
       break;
     default:
       console.error(`Unknown command: ${command}`);
