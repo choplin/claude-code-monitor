@@ -111,6 +111,58 @@ Used internally by hooks. Not intended for direct use.
 claude-code-monitor delete --session-id <id>
 ```
 
+## 🔔 User-Defined Hooks
+
+Execute custom shell commands when events occur or session states change — desktop notifications, sounds, logging, etc.
+
+### Configuration
+
+Create a config file at `~/.config/claude-code-monitor/config.toml` (or `$XDG_CONFIG_HOME/claude-code-monitor/config.toml`):
+
+```toml
+# Fire on a specific event
+[[hooks]]
+on_event = "Stop"
+command = "notify-send 'Claude stopped'"
+
+[[hooks]]
+on_event = "SessionStart"
+command = "echo $MONITOR_SESSION_ID >> ~/claude-sessions.log"
+
+# Fire on state changes
+[[hooks]]
+on_state_change = { to = "waiting_input" }
+command = "terminal-notifier -message 'Waiting for input'"
+
+[[hooks]]
+on_state_change = { from = "running", to = "waiting_question" }
+command = "play-sound ~/alert.wav"
+```
+
+### Trigger Types
+
+| Type | Description |
+|------|-------------|
+| `on_event` | Fire on a specific hook event (`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PreToolUse`, `Stop`) |
+| `on_state_change` | Fire on state transitions. `from`/`to` are optional (omitted = wildcard). Only fires when state actually changes. |
+
+`on_event` and `on_state_change` are mutually exclusive per hook entry.
+
+### Environment Variables
+
+Commands receive context via environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `MONITOR_SESSION_ID` | Session ID |
+| `MONITOR_CWD` | Working directory |
+| `MONITOR_EVENT` | Hook event name |
+| `MONITOR_TOOL_NAME` | Tool name (PreToolUse only) |
+| `MONITOR_STATE` | Current interpreted state |
+| `MONITOR_PREV_STATE` | Previous state |
+| `MONITOR_PANE_ID` | Terminal pane ID |
+| `MONITOR_PANE_TERMINAL` | Terminal type |
+
 ## 🗄️ Data Storage
 
 Session data is stored in `~/.claude/claude-code-monitor.db` (SQLite, WAL mode).

@@ -8,13 +8,21 @@
 │  (Hook events)   │────▶│  (raw events)│────▶│  (interpreted   │
 │                  │     │              │     │   states)       │
 └─────────────────┘     └──────────────┘     └─────────────────┘
+                              │
+                              ▼
+                        ┌─────────────┐
+                        │ User Hooks  │
+                        │ (config.toml│
+                        │  commands)  │
+                        └─────────────┘
 ```
 
-The system has three layers:
+The system has four layers:
 
 1. **Hooks** — Capture Claude Code lifecycle events and write raw data to the database
 2. **Database** — Store raw event records per session
 3. **CLI** — Read sessions, interpret states, and display results
+4. **User Hooks** — Execute user-defined shell commands on events or state changes
 
 ## Entry Point & Auto-Build
 
@@ -36,6 +44,8 @@ Claude Code emits event
   → hooks/hooks.json routes to bin/claude-code-monitor hook <event>
     → cli.ts `hook` subcommand reads stdin, calls db directly
       → src/db.ts upserts raw event into SQLite
+        → src/config.ts loads user config (if exists)
+          → src/user-hooks.ts fires matching user-defined hooks
 
 User runs CLI (or slash command)
   → bin/claude-code-monitor <command>
@@ -116,6 +126,46 @@ reads stdin JSON, extracts `session_id` and `cwd`, and calls `upsertSession`/
 
 Errors are silently caught to never block Claude Code.
 
+## User-Defined Hooks
+
+Defined in `src/config.ts` and `src/user-hooks.ts`. Users can configure shell commands
+to run when events occur or session states change.
+
+### Config File
+
+Location (XDG Base Directory):
+- `$XDG_CONFIG_HOME/claude-code-monitor/config.toml`
+- Fallback: `~/.config/claude-code-monitor/config.toml`
+
+Format: TOML with `[[hooks]]` array entries. Each entry has:
+- `on_event` — Fire on a specific hook event (e.g., `"Stop"`, `"SessionStart"`)
+- `on_state_change` — Fire on state transitions, with optional `from`/`to` filters
+- `command` — Shell command to execute
+
+`on_event` and `on_state_change` are mutually exclusive per entry.
+State-change hooks only fire when previous state differs from new state.
+
+### Environment Variables
+
+Commands receive context via `MONITOR_`-prefixed environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `MONITOR_SESSION_ID` | Session ID |
+| `MONITOR_CWD` | Working directory |
+| `MONITOR_EVENT` | Hook event name |
+| `MONITOR_TOOL_NAME` | Tool name (PreToolUse only, empty otherwise) |
+| `MONITOR_STATE` | Current interpreted state (empty for SessionEnd) |
+| `MONITOR_PREV_STATE` | Previous state (empty for new sessions) |
+| `MONITOR_PANE_ID` | Terminal pane ID (if available) |
+| `MONITOR_PANE_TERMINAL` | Terminal type (if available) |
+
+### Execution
+
+Hook commands are spawned via `/bin/sh -c` with `stdin`/`stdout`/`stderr` set to
+`"ignore"`. Processes are `.unref()`-ed so they don't block the monitor. All errors
+are silently caught to never interfere with Claude Code operation.
+
 ## Terminal Detection
 
 Defined in `src/terminal.ts`. A pluggable detector system identifies the terminal
@@ -161,10 +211,12 @@ claude-code-monitor/
 │   └── hooks.json           # Hook event configuration
 ├── src/
 │   ├── cli.ts               # CLI entry point
+│   ├── config.ts            # User config loading (XDG, TOML)
 │   ├── db.ts                # Database operations
 │   ├── interpret.ts         # State interpretation logic
 │   ├── terminal.ts          # Terminal pane detection
 │   ├── types.ts             # Type definitions
+│   ├── user-hooks.ts        # User-defined hook matching + execution
 │   └── commands/
 │       ├── delete.ts        # `delete` command
 │       ├── hook.ts          # `hook` command (stdin-based, used by hooks)

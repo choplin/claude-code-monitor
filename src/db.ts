@@ -85,6 +85,21 @@ export function upsertSession(
   }
 }
 
+export function getSession(sessionId: string): Session | null {
+  const db = getDb();
+  try {
+    return (
+      db
+        .query<Session, [string]>(
+          "SELECT * FROM sessions WHERE session_id = ?"
+        )
+        .get(sessionId) ?? null
+    );
+  } finally {
+    db.close();
+  }
+}
+
 export function listSessions(): Session[] {
   const db = getDb();
   try {

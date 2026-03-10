@@ -1,4 +1,7 @@
-import { initDb, upsertSession, deleteSession } from "../db";
+import { initDb, upsertSession, deleteSession, getSession } from "../db";
+import { interpretState } from "../interpret";
+import { loadConfig } from "../config";
+import { fireUserHooks, type HookContext } from "../user-hooks";
 import type { HookEvent } from "../types";
 import { detectPane } from "../terminal";
 
@@ -28,9 +31,26 @@ export async function runHook(args: string[]): Promise<void> {
     process.exit(0);
   }
 
+  const config = loadConfig();
+
   if (event === "SessionEnd") {
     initDb();
+    const prevSession = getSession(sessionId);
+    const prevState = prevSession ? interpretState(prevSession) : "";
     deleteSession(sessionId);
+
+    if (config) {
+      fireUserHooks(config, {
+        sessionId,
+        cwd: prevSession?.cwd ?? cwd ?? "",
+        event: "SessionEnd",
+        toolName: null,
+        state: "",
+        prevState,
+        paneId: prevSession?.pane_id ?? pane?.paneId ?? null,
+        paneTerminal: prevSession?.pane_terminal ?? pane?.terminal ?? null,
+      });
+    }
     return;
   }
 
@@ -41,6 +61,24 @@ export async function runHook(args: string[]): Promise<void> {
   initDb();
 
   if (UPDATE_EVENTS.includes(event)) {
+    const prevSession = getSession(sessionId);
     upsertSession(sessionId, cwd, event, toolName, pane);
+
+    if (config) {
+      const newSession = getSession(sessionId)!;
+      const state = interpretState(newSession);
+      const prevState = prevSession ? interpretState(prevSession) : "";
+
+      fireUserHooks(config, {
+        sessionId,
+        cwd,
+        event,
+        toolName,
+        state,
+        prevState,
+        paneId: newSession.pane_id,
+        paneTerminal: newSession.pane_terminal,
+      });
+    }
   }
 }

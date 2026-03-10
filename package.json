@@ -16,6 +16,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "cli-table3": "^0.6.5"
+    "cli-table3": "^0.6.5",
+    "smol-toml": "^1.6.0"
   }
 }

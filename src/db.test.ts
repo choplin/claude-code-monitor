@@ -3,7 +3,13 @@ import { join } from "path";
 import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { Database } from "bun:sqlite";
-import { initDb, upsertSession, listSessions, deleteSession } from "./db";
+import {
+  initDb,
+  upsertSession,
+  getSession,
+  listSessions,
+  deleteSession,
+} from "./db";
 
 const testDir = mkdtempSync(join(tmpdir(), "ccm-db-test-"));
 const testDb = join(testDir, "test.db");
@@ -157,6 +163,21 @@ describe("upsertSession", () => {
     upsertSession("s3", "/path/c", "PreToolUse", "AskUserQuestion");
     const sessions = listSessions();
     expect(sessions).toHaveLength(3);
+  });
+});
+
+describe("getSession", () => {
+  test("returns session by ID", () => {
+    upsertSession("s1", "/path/project", "SessionStart");
+    const session = getSession("s1");
+    expect(session).not.toBeNull();
+    expect(session!.session_id).toBe("s1");
+    expect(session!.cwd).toBe("/path/project");
+    expect(session!.event).toBe("SessionStart");
+  });
+
+  test("returns null for non-existent session", () => {
+    expect(getSession("non-existent")).toBeNull();
   });
 });
 
