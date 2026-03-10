@@ -3,7 +3,7 @@ import { basename } from "path";
 import Table from "cli-table3";
 import { listSessions } from "../db";
 import { interpretState, formatState, formatElapsed } from "../interpret";
-import { formatPane } from "../terminal";
+import { formatPane, paneColumnHeader } from "../terminal";
 import type { OutputFormat, SessionState } from "../types";
 
 type ColorMode = "auto" | "always" | "never";
@@ -68,8 +68,12 @@ export function runList(args: string[]): void {
     if (sessions.length === 0) {
       console.log("No active sessions");
     } else {
+      const paneHeader = paneColumnHeader(sessions);
+      const head = ["PROJECT", "STATE", "ELAPSED", "SESSION"];
+      if (paneHeader) head.push(paneHeader);
+
       const table = new Table({
-        head: ["PROJECT", "STATE", "ELAPSED", "SESSION", "PANE"],
+        head,
         chars: {
           top: "",
           "top-mid": "",
@@ -97,13 +101,14 @@ export function runList(args: string[]): void {
 
       for (const session of sessions) {
         const state = interpretState(session);
-        table.push([
+        const row = [
           basename(session.cwd),
           `${stateIcon(state)} ${stateLabel(state)}`,
           formatElapsed(session.state_changed_at),
           formatElapsed(session.created_at),
-          formatPane(session),
-        ]);
+        ];
+        if (paneHeader) row.push(formatPane(session));
+        table.push(row);
       }
 
       console.log(table.toString());

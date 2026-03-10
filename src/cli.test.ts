@@ -166,7 +166,7 @@ describe("CLI: list", () => {
     expect(result.stdout).toMatch(/\d+s/);
   });
 
-  test("shows formatted pane when available", () => {
+  test("shows pane column with terminal header when pane is set", () => {
     runCli(
       "update",
       "--session-id",
@@ -181,10 +181,11 @@ describe("CLI: list", () => {
       "tmux"
     );
     const result = runCli("list");
-    expect(result.stdout).toContain("tmux:%0");
+    expect(result.stdout).toContain("TMUX");
+    expect(result.stdout).toContain("%0");
   });
 
-  test("shows dash when pane is not set", () => {
+  test("hides pane column when no sessions have pane info", () => {
     runCli(
       "update",
       "--session-id",
@@ -195,7 +196,9 @@ describe("CLI: list", () => {
       "SessionStart"
     );
     const result = runCli("list");
-    expect(result.stdout).toContain("-");
+    expect(result.stdout).not.toContain("PANE");
+    expect(result.stdout).not.toContain("TMUX");
+    expect(result.stdout).not.toContain("WEZ");
   });
 
   test("shows table header", () => {
@@ -213,7 +216,6 @@ describe("CLI: list", () => {
     expect(result.stdout).toContain("STATE");
     expect(result.stdout).toContain("ELAPSED");
     expect(result.stdout).toContain("SESSION");
-    expect(result.stdout).toContain("PANE");
   });
 
   test("outputs JSON with --format json", () => {

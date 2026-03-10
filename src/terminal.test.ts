@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { detectPane, formatPane } from "./terminal";
+import { detectPane, formatPane, paneColumnHeader } from "./terminal";
 
 describe("detectPane", () => {
   let savedTmux: string | undefined;
@@ -41,25 +41,67 @@ describe("detectPane", () => {
 });
 
 describe("formatPane", () => {
-  test("formats tmux pane", () => {
-    expect(formatPane({ pane_id: "%0", pane_terminal: "tmux" })).toBe(
-      "tmux:%0"
-    );
+  test("returns pane_id when present", () => {
+    expect(formatPane({ pane_id: "%0", pane_terminal: "tmux" })).toBe("%0");
   });
 
-  test("formats wezterm pane", () => {
-    expect(formatPane({ pane_id: "3", pane_terminal: "wez" })).toBe("wez:3");
+  test("returns pane_id regardless of pane_terminal", () => {
+    expect(formatPane({ pane_id: "3", pane_terminal: null })).toBe("3");
   });
 
   test("returns dash when pane_id is null", () => {
     expect(formatPane({ pane_id: null, pane_terminal: "tmux" })).toBe("-");
   });
 
-  test("returns dash when pane_terminal is null", () => {
-    expect(formatPane({ pane_id: "%0", pane_terminal: null })).toBe("-");
-  });
-
   test("returns dash when both are null", () => {
     expect(formatPane({ pane_id: null, pane_terminal: null })).toBe("-");
+  });
+});
+
+describe("paneColumnHeader", () => {
+  test("returns null when no sessions have pane info", () => {
+    expect(
+      paneColumnHeader([
+        { pane_id: null, pane_terminal: null },
+        { pane_id: null, pane_terminal: null },
+      ])
+    ).toBeNull();
+  });
+
+  test("returns null for empty array", () => {
+    expect(paneColumnHeader([])).toBeNull();
+  });
+
+  test("returns uppercased terminal name when all same", () => {
+    expect(
+      paneColumnHeader([
+        { pane_id: "%0", pane_terminal: "tmux" },
+        { pane_id: "%1", pane_terminal: "tmux" },
+      ])
+    ).toBe("TMUX");
+  });
+
+  test("returns uppercased terminal name for wezterm", () => {
+    expect(
+      paneColumnHeader([{ pane_id: "3", pane_terminal: "wez" }])
+    ).toBe("WEZ");
+  });
+
+  test("ignores sessions without pane info", () => {
+    expect(
+      paneColumnHeader([
+        { pane_id: "%0", pane_terminal: "tmux" },
+        { pane_id: null, pane_terminal: null },
+      ])
+    ).toBe("TMUX");
+  });
+
+  test("returns PANE when terminals are mixed", () => {
+    expect(
+      paneColumnHeader([
+        { pane_id: "%0", pane_terminal: "tmux" },
+        { pane_id: "3", pane_terminal: "wez" },
+      ])
+    ).toBe("PANE");
   });
 });
