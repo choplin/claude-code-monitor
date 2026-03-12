@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { detectPane, formatPane, paneColumnHeader } from "./terminal";
 
 describe("detectPane", () => {

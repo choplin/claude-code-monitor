@@ -9,7 +9,10 @@
   "plugins": [
     {
       "name": "claude-code-monitor",
-      "source": "./",
+      "source": {
+        "source": "npm",
+        "package": "claude-code-monitor"
+      },
       "description": "Monitor multiple Claude Code session states via hooks and SQLite",
       "version": "0.1.0",
       "category": "development",

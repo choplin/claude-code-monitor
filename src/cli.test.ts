@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterAll } from "bun:test";
+import { describe, test, expect, beforeEach, afterAll } from "vitest";
 import { spawnSync } from "child_process";
 import { join } from "path";
 import { mkdtempSync, rmSync } from "fs";
@@ -6,10 +6,10 @@ import { tmpdir } from "os";
 
 const testDir = mkdtempSync(join(tmpdir(), "ccm-cli-test-"));
 const testDb = join(testDir, "test.db");
-const cliPath = join(import.meta.dir, "cli.ts");
+const cliPath = join(import.meta.dirname, "cli.ts");
 
 function runCli(...args: string[]) {
-  const result = spawnSync("bun", ["run", cliPath, ...args], {
+  const result = spawnSync("node", ["--import", "tsx/esm", cliPath, ...args], {
     env: { ...process.env, CLAUDE_CODE_MONITOR_DB: testDb },
   });
   return {
@@ -301,9 +301,9 @@ describe("CLI: delete", () => {
 
 describe("CLI: hook", () => {
   function runHook(event: string, payload: object, toolName?: string) {
-    const args = ["run", cliPath, "hook", event];
+    const args = ["--import", "tsx/esm", cliPath, "hook", event];
     if (toolName) args.push(toolName);
-    const result = spawnSync("bun", args, {
+    const result = spawnSync("node", args, {
       input: JSON.stringify(payload),
       env: { ...process.env, CLAUDE_CODE_MONITOR_DB: testDb },
     });

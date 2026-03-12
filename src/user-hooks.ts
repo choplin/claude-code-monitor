@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import type { Config, HookConfig } from "./config";
 import type { HookEvent, SessionState } from "./types";
 
@@ -51,11 +52,10 @@ export function fireUserHooks(config: Config, context: HookContext): void {
     try {
       if (!matchesHook(hook, context)) continue;
 
-      const proc = Bun.spawn(["/bin/sh", "-c", hook.command], {
+      const proc = spawn("/bin/sh", ["-c", hook.command], {
         env: buildEnv(context),
-        stdin: "ignore",
-        stdout: "ignore",
-        stderr: "ignore",
+        stdio: "ignore",
+        detached: true,
       });
       proc.unref();
     } catch {

@@ -16,9 +16,7 @@ Hook (auto-collect)  →  SQLite DB  →  CLI (display)
 
 ## 📦 Installation
 
-### From Marketplace
-
-Add the marketplace and install the plugin:
+### From Marketplace (npm)
 
 ```bash
 /plugin marketplace add owner/claude-code-monitor
@@ -34,7 +32,7 @@ Add the marketplace and install the plugin:
 
 ### Prerequisites
 
-[Bun](https://bun.sh/) is required. On first use, the plugin automatically compiles a standalone binary in the background for faster subsequent runs.
+Node.js is required (provided by Claude Code's runtime).
 
 ## 🔍 How It Works
 
@@ -100,7 +98,8 @@ claude-code-monitor update \
   --cwd <path> \
   --event <event> \
   [--tool-name <name>] \
-  [--tmux-pane <pane>]
+  [--pane-id <pane>] \
+  [--pane-terminal <terminal>]
 ```
 
 #### `delete` — Delete a session (internal)

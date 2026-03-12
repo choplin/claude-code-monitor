@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { validateConfig, getConfigPath } from "./config";
 import { join } from "path";
 import { homedir } from "os";

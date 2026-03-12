@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { interpretState, formatState, formatElapsed } from "./interpret";
 import type { Session } from "./types";
 

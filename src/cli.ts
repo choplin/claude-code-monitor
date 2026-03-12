@@ -1,5 +1,3 @@
-#!/usr/bin/env bun
-
 import { initDb } from "./db";
 import { runUpdate } from "./commands/update";
 import { runList } from "./commands/list";

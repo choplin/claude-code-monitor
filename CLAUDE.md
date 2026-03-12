@@ -17,9 +17,15 @@ Claude Code plugin that monitors multiple session states via hooks and SQLite.
 ## Commands
 
 ```bash
-# Type check
-bun run --bun tsc --noEmit
+# Build
+npm run build
 
-# Run CLI
-bun run src/cli.ts <command>
+# Type check
+npm run typecheck
+
+# Test
+npm test
+
+# Run CLI (dev)
+npx tsx src/cli.ts <command>
 ```

@@ -1,7 +1,7 @@
-import { describe, test, expect, afterAll } from "bun:test";
+import { describe, test, expect, afterAll } from "vitest";
 import { fireUserHooks, type HookContext } from "./user-hooks";
 import type { Config } from "./config";
-import { unlinkSync, existsSync } from "fs";
+import { unlinkSync, existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
@@ -26,6 +26,10 @@ function tempFile(name: string): string {
   return p;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 afterAll(() => {
   for (const f of tempFiles) {
     try {
@@ -43,7 +47,7 @@ describe("fireUserHooks", () => {
       };
       fireUserHooks(config, makeContext({ event: "Stop" }));
       // Wait for async process
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(true);
     });
 
@@ -53,7 +57,7 @@ describe("fireUserHooks", () => {
         hooks: [{ on_event: "SessionStart", command: `touch ${marker}` }],
       };
       fireUserHooks(config, makeContext({ event: "Stop" }));
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(false);
     });
   });
@@ -73,7 +77,7 @@ describe("fireUserHooks", () => {
         config,
         makeContext({ state: "waiting_input", prevState: "running" })
       );
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(true);
     });
 
@@ -91,7 +95,7 @@ describe("fireUserHooks", () => {
         config,
         makeContext({ state: "waiting_question", prevState: "running" })
       );
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(true);
     });
 
@@ -109,7 +113,7 @@ describe("fireUserHooks", () => {
         config,
         makeContext({ state: "waiting_input", prevState: "running" })
       );
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(true);
     });
 
@@ -127,7 +131,7 @@ describe("fireUserHooks", () => {
         config,
         makeContext({ state: "running", prevState: "running" })
       );
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(false);
     });
 
@@ -148,7 +152,7 @@ describe("fireUserHooks", () => {
         config,
         makeContext({ state: "waiting_input", prevState: "running" })
       );
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(false);
     });
   });
@@ -177,8 +181,8 @@ describe("fireUserHooks", () => {
           paneTerminal: "tmux",
         })
       );
-      await Bun.sleep(200);
-      const content = await Bun.file(marker).text();
+      await sleep(200);
+      const content = readFileSync(marker, "utf-8");
       expect(content.trim()).toBe(
         "abc-123|/my/project|PreToolUse|Bash|running|waiting_input|%0|tmux"
       );
@@ -204,7 +208,7 @@ describe("fireUserHooks", () => {
         ],
       };
       fireUserHooks(config, makeContext());
-      await Bun.sleep(200);
+      await sleep(200);
       expect(existsSync(marker)).toBe(true);
     });
   });

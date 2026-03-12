@@ -24,31 +24,28 @@ The system has four layers:
 3. **CLI** — Read sessions, interpret states, and display results
 4. **User Hooks** — Execute user-defined shell commands on events or state changes
 
-## Entry Point & Auto-Build
+## Build & Distribution
 
-All invocations (hooks and CLI) go through `bin/claude-code-monitor`, a shell script that:
-
-1. Builds the compiled binary (`bin/.compiled`) if missing or source has changed
-2. Executes the compiled binary
+The project uses **esbuild** to bundle `src/cli.ts` into `dist/cli.js`. The bundle runs on **Node.js** (no Bun dependency). Native modules (`better-sqlite3`, `cli-table3`, `smol-toml`) are marked as external and resolved from `node_modules` at runtime.
 
 ```
-First run:  bin/claude-code-monitor → bun build --compile → exec bin/.compiled
-Next runs:  bin/claude-code-monitor → exec bin/.compiled (fast, no bun needed)
-Source changed: bin/claude-code-monitor → rebuild → exec bin/.compiled
+npm run build  →  esbuild  →  dist/cli.js (Node.js ESM bundle)
 ```
+
+Distribution is via **npm**. The `bin` field in `package.json` points to `dist/cli.js`, and the Marketplace configuration uses npm as the source.
 
 ## Data Flow
 
 ```
 Claude Code emits event
-  → hooks/hooks.json routes to bin/claude-code-monitor hook <event>
+  → hooks/hooks.json routes to `node dist/cli.js hook <event>`
     → cli.ts `hook` subcommand reads stdin, calls db directly
       → src/db.ts upserts raw event into SQLite
         → src/config.ts loads user config (if exists)
           → src/user-hooks.ts fires matching user-defined hooks
 
 User runs CLI (or slash command)
-  → bin/claude-code-monitor <command>
+  → node dist/cli.js <command>
     → cli.ts dispatches to command handler
       → src/db.ts reads sessions from SQLite
         → src/interpret.ts maps raw event to display state
@@ -120,7 +117,7 @@ Configured in `hooks/hooks.json`:
 | `PreToolUse` | `ExitPlanMode` | Upsert session with tool_name |
 | `Stop` | — | Upsert session |
 
-All hooks go through `bin/claude-code-monitor hook <event>`. The `hook` subcommand
+All hooks go through `node dist/cli.js hook <event>`. The `hook` subcommand
 reads stdin JSON, extracts `session_id` and `cwd`, and calls `upsertSession`/
 `deleteSession` directly (no subprocess spawning).
 
@@ -162,8 +159,8 @@ Commands receive context via `MONITOR_`-prefixed environment variables:
 
 ### Execution
 
-Hook commands are spawned via `/bin/sh -c` with `stdin`/`stdout`/`stderr` set to
-`"ignore"`. Processes are `.unref()`-ed so they don't block the monitor. All errors
+Hook commands are spawned via `/bin/sh -c` with `stdio` set to `"ignore"`.
+Processes are detached and `.unref()`-ed so they don't block the monitor. All errors
 are silently caught to never interfere with Claude Code operation.
 
 ## Terminal Detection
@@ -201,18 +198,18 @@ PreToolUse
 ```
 claude-code-monitor/
 ├── .claude-plugin/
-│   └── plugin.json          # Plugin manifest
-├── bin/
-│   ├── claude-code-monitor  # Shell script entry point (auto-builds on first use)
-│   └── .compiled            # Compiled binary (gitignored, built locally)
+│   ├── plugin.json          # Plugin manifest
+│   └── marketplace.json     # Marketplace configuration (npm source)
 ├── commands/
 │   └── monitor-list.md      # /monitor-list slash command
+├── dist/
+│   └── cli.js               # esbuild bundle (gitignored, built via npm run build)
 ├── hooks/
 │   └── hooks.json           # Hook event configuration
 ├── src/
 │   ├── cli.ts               # CLI entry point
 │   ├── config.ts            # User config loading (XDG, TOML)
-│   ├── db.ts                # Database operations
+│   ├── db.ts                # Database operations (better-sqlite3)
 │   ├── interpret.ts         # State interpretation logic
 │   ├── terminal.ts          # Terminal pane detection
 │   ├── types.ts             # Type definitions

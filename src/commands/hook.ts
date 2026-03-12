@@ -20,7 +20,11 @@ export async function runHook(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  const input = await Bun.stdin.text();
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk);
+  }
+  const input = Buffer.concat(chunks).toString();
   const data = JSON.parse(input);
 
   const sessionId = data.session_id;

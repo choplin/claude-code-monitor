@@ -6,7 +6,7 @@ allowed-tools: Bash
 Run the following command to list all active Claude Code sessions:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/bin/claude-code-monitor" list
+node "${CLAUDE_PLUGIN_ROOT}/dist/cli.js" list
 ```
 
 Present the results to the user. Each line shows `project-name: state` where state is one of:

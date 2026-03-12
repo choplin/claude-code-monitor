@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeEach, afterAll } from "bun:test";
+import { describe, test, expect, beforeEach, afterAll } from "vitest";
 import { join } from "path";
 import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import {
   initDb,
   upsertSession,
@@ -53,9 +53,9 @@ describe("initDb", () => {
     try {
       rmSync(testDb);
     } catch {}
-    const db = new Database(testDb, { create: true });
-    db.run("PRAGMA journal_mode = WAL");
-    db.run(`
+    const db = new Database(testDb);
+    db.pragma("journal_mode = WAL");
+    db.exec(`
       CREATE TABLE sessions (
         session_id TEXT PRIMARY KEY,
         cwd TEXT NOT NULL,
@@ -67,10 +67,10 @@ describe("initDb", () => {
         tmux_pane TEXT
       )
     `);
-    db.run(
+    db.exec(
       `INSERT INTO sessions VALUES ('s1', '/test', 'SessionStart', NULL, 1000, 1000, 1000, '%0')`
     );
-    db.run(
+    db.exec(
       `INSERT INTO sessions VALUES ('s2', '/test2', 'Stop', NULL, 2000, 2000, 2000, NULL)`
     );
     db.close();
